@@ -13,6 +13,30 @@ class Background:
         screen.blit(self.surface, (0, 0))
 
 
+class GameObject(pygame.sprite.Sprite):
+    def update(self):
+        pass
+
+    def draw(self):
+        pass
+
+    def get_speed(self):
+        return self.speed
+
+    def set_speed(self, speed):
+        self.speed = speed
+
+    def get_position(self):
+        return self.position
+    
+    def set_position(self, position):
+        self.position = position
+
+
+class Player(GameObject):
+    def draw(self):
+        pass
+
 class Game:
     run = True
     background = None
