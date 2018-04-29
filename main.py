@@ -1,6 +1,7 @@
 import os
 import pygame
 from pygame.locals import *
+from math import ceil
 
 IMAGES_PATH = os.path.join(".", "images")
 
@@ -8,9 +9,16 @@ class Background:
     image = None
 
     def __init__(self):
-        screen = pygame.display.get_surface()
-        self.image = pygame.Surface(screen.get_size()).convert()
-        self.image.fill((100, 50, 20))
+        screen_size = pygame.display.get_surface().get_size()
+        background = pygame.Surface(screen_size)
+        image = pygame.image.load(os.path.join(IMAGES_PATH, 'bg_universe.jpg')).convert()
+        image_size = image.get_size()
+
+        for i in range(ceil(screen_size[0] / image_size[0])):
+            for j in range(ceil(screen_size[1] / image_size[1])):
+                background.blit(image, (i * image_size[0], j * image_size[1]))
+
+        self.image = background
         
     def draw(self, screen):
         screen.blit(self.image, (0, 0))
