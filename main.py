@@ -25,9 +25,13 @@ class Background:
 
 
 class GameObject(pygame.sprite.Sprite):
+    speed = (2, 0)
+
     def __init__(self, position):
         pygame.sprite.Sprite.__init__(self)
-        self.set_position(position)
+        screen = pygame.display.get_surface()
+        self.position = position
+        self.screen_size = screen.get_size()
 
     def update(self):
         pass
@@ -53,19 +57,25 @@ class Player(GameObject):
     rect = None
 
     def __init__(self):
-        GameObject.__init__(self, (0, 0))
-        screen = pygame.display.get_surface()
-        screen_size = screen.get_size()
-        self.image = pygame.Surface((screen_size[0]/10, screen_size[1]/30)).convert()
+        GameObject.__init__(self, (400, 300))
+        self.image = pygame.Surface((self.screen_size[0]/10, self.screen_size[1]/30)).convert()
         self.image.fill((255, 255, 255))
         self.rect = self.image.get_rect()
-        self.rect.bottom = 600
-        self.rect.centerx = 400
+        self.rect.center = self.position
+
+
+    def set_position(self, position):
+        self.position = position
+        if self.rect.left > self.screen_size[0]:
+            self.rect.right = 0
+            self.position = self.rect.center
+        elif self.rect.right < 0:
+            self.rect.left = self.screen_size[0]
+            self.position = self.rect.center
 
     def update(self, dt):
-        self.rect.centerx += 25
-        if self.rect.left > pygame.display.get_surface().get_size()[0]:
-            self.rect.right = 0
+        self.set_position((self.position[0] + self.speed[0], self.position[1] + self.speed[1]))
+        self.rect.center = self.position
 
 class Game:
     run = True
