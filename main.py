@@ -25,7 +25,7 @@ class Background:
 
 
 class GameObject(pygame.sprite.Sprite):
-    speed = (2, 0)
+    speed = (0, 0)
 
     def __init__(self, position):
         pygame.sprite.Sprite.__init__(self)
@@ -63,6 +63,11 @@ class Player(GameObject):
         self.rect = self.image.get_rect()
         self.rect.center = self.position
 
+    def go_left(self):
+        self.speed = (-5, 0)
+
+    def go_right(self):
+        self.speed = (5, 0)
 
     def set_position(self, position):
         self.position = position
@@ -77,9 +82,41 @@ class Player(GameObject):
         self.set_position((self.position[0] + self.speed[0], self.position[1] + self.speed[1]))
         self.rect.center = self.position
 
+class Ball(GameObject):
+    speed = (8, 8)
+
+    def __init__(self):
+        GameObject.__init__(self, (0, 0))
+        self.image = pygame.Surface((10, 10)).convert()
+        self.image.fill((255, 255, 255))
+        self.rect = self.image.get_rect()
+        self.rect.center = self.position
+
+    def set_position(self, position):
+        self.position = position
+        if self.rect.left > self.screen_size[0]:
+            self.rect.right = 0
+            self.position = self.rect.center
+        elif self.rect.right < 0:
+            self.rect.left = self.screen_size[0]
+            self.position = self.rect.center
+
+        if self.rect.top > self.screen_size[1]:
+            self.rect.bottom = 0
+            self.position = self.rect.center
+        elif self.rect.bottom < 0:
+            self.rect.top = self.screen_size[1]
+            self.position = self.rect.center
+
+    def update(self, dt):
+        self.set_position((self.position[0] + self.speed[0], self.position[1] + self.speed[1]))
+        self.rect.center = self.position
+
+
 class Game:
     run = True
     background = None
+    balls_list = pygame.sprite.Group()
     all_sprites = pygame.sprite.RenderUpdates()
 
     def __init__(self):
@@ -88,9 +125,24 @@ class Game:
         self.background = Background()
 
     def handle_events(self):
+        balls_hitted = pygame.sprite.spritecollide(self.player, self.balls_list, False)
+        for ball in balls_hitted:
+            ball.set_speed((ball.speed[0], ball.speed[1] * -1))
+
         for event in pygame.event.get():
+            keys = pygame.key.get_pressed()
+
             if event.type == QUIT:
                 self.run = False
+            elif event.type == KEYDOWN:
+                if keys[K_LEFT]:
+                    self.player.go_left()
+                elif keys[K_RIGHT]:
+                    self.player.go_right()
+            elif event.type == KEYUP:
+                if not keys[K_RIGHT] and not keys[K_LEFT]:
+                    self.player.set_speed((0, 0))
+
 
     def actors_update(self, dt):
         self.all_sprites.update(dt)
@@ -101,18 +153,18 @@ class Game:
         pygame.display.update(rectlist)
 
     def play(self):
-        player = Player()
-        self.all_sprites.add(player)
+        self.player = Player()
+        self.ball = Ball()
+        self.balls_list.add(self.ball)
+        self.all_sprites.add(self.player, self.ball)
 
     def loop(self):
-        dt = 40
+        dt = 10
         FPS = 1000 / dt
         clock = pygame.time.Clock()
         self.background.draw(self.screen)
         pygame.display.update()
         self.play()
-
-        print(self.screen)
 
         while self.run:
             clock.tick(FPS)
