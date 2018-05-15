@@ -1,4 +1,6 @@
 import os
+import sys
+import getopt
 import pygame
 from pygame.locals import *
 from math import ceil
@@ -119,9 +121,12 @@ class Game:
     balls_list = pygame.sprite.Group()
     all_sprites = pygame.sprite.RenderUpdates()
 
-    def __init__(self):
+    def __init__(self, size, fullscreen):
         pygame.init()
-        self.screen = pygame.display.set_mode([800, 600])
+        flags = DOUBLEBUF
+        if fullscreen:
+            flags |= FULLSCREEN
+        self.screen = pygame.display.set_mode(size, flags)
         self.background = Background()
 
     def handle_events(self):
@@ -173,9 +178,52 @@ class Game:
             self.actors_draw()
             # print('FPS: {0:.2f}'.format(clock.get_fps()))
 
+def parse_opts( argv ):
+    try:
+        opts, args = getopt.gnu_getopt( argv[ 1 : ],
+                                        "hfr:",
+                                        [ "help",
+                                          "fullscreen",
+                                          "resolution=" ] )
+    except getopt.GetoptError:
+        usage()
+        sys.exit( 2 )
 
-def main():
-    game = Game()
+    options = {
+        "fullscreen":  False,
+        "resolution": ( 640, 480 ),
+        }
+
+    for o, a in opts:
+        if o in ( "-f", "--fullscreen" ):
+            options[ "fullscreen" ] = True
+        elif o in ( "-h", "--help" ):
+            usage()
+            sys.exit( 0 )
+        elif o in ( "-r", "--resolution" ):
+            a = a.lower()
+            r = a.split( "x" )
+            if len( r ) == 2:
+                options[ "resolution" ] = r
+                continue
+
+            r = a.split( "," )
+            if len( r ) == 2:
+                options[ "resolution" ] = r
+                continue
+
+            r = a.split( ":" )
+            if len( r ) == 2:
+                options[ "resolution" ] = r
+                continue
+
+    r = options[ "resolution" ]
+    options[ "resolution" ] = [ int( r[ 0 ] ), int( r[ 1 ] ) ]
+    return options
+
+def main(argv):
+    options = parse_opts(argv)
+    game = Game(options["resolution"], options["fullscreen"])
     game.loop()
 
-main()
+main(sys.argv)
