@@ -90,7 +90,8 @@ class Ball(GameObject):
     def __init__(self):
         GameObject.__init__(self, (0, 0))
         self.image = pygame.Surface((10, 10)).convert()
-        self.image.fill((255, 255, 255))
+        pygame.draw.circle(self.image, (0, 0, 255), (5, 5), 5, 0)
+        # self.image.fill((255, 255, 255))
         self.rect = self.image.get_rect()
         self.rect.center = self.position
 
@@ -192,7 +193,7 @@ def parse_opts( argv ):
     options = {
         "fullscreen":  False,
         "resolution": ( 640, 480 ),
-        }
+    }
 
     for o, a in opts:
         if o in ( "-f", "--fullscreen" ):
